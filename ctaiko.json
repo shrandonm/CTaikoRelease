@@ -1,0 +1,14 @@
+{
+  "version": "1",
+  "notes": "First release with the installer and automatic updates.",
+  "windows": {
+    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v1/CTaiko-1-setup.exe",
+    "size": 2797576,
+    "sha256": "bd3b194f812071a53b841094ba5df4e24ac51756c8215840ef1f58fa3a5f9a5c"
+  },
+  "android": {
+    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v1/CTaiko-1.apk",
+    "size": 22478861,
+    "sha256": "7715bdde471fab998ca8328f01928a8dfa53407692cd4154ef61119065dddeaa"
+  }
+}
