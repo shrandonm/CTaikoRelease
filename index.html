@@ -136,6 +136,22 @@
   .soon:hover::after, .soon:focus-visible::after { opacity: 1; }
   .soon:focus-visible { outline: 1px solid var(--focus); outline-offset: 2px; }
 
+  /* ---- "Windows blocked it?" help ---- */
+  .help { width: min(420px, 100%); margin-top: 22px; text-align: left; font-size: 14px; color: var(--text-dim); }
+  .help summary {
+    cursor: pointer; list-style: none; text-align: center; font-family: var(--display); font-size: 15px; letter-spacing: .04em; color: var(--cyan);
+  }
+  .help summary::-webkit-details-marker { display: none; }
+  .help summary::after { content: " +"; }
+  .help[open] summary::after { content: " \2212"; }
+  .help summary:focus-visible { outline: 1px solid var(--focus); outline-offset: 3px; }
+  .help .body { margin-top: 12px; padding: 14px 16px; background: rgba(17,21,32,.85); border: 1px solid var(--hairline); border-left: 3px solid var(--signal); }
+  .help h2 { margin: 0 0 4px; font-family: var(--display); font-weight: 500; font-size: 15px; letter-spacing: .04em; color: var(--text); }
+  .help h2 + ol { margin-top: 0; }
+  .help ol { margin: 0 0 12px; padding-left: 20px; }
+  .help ol:last-child { margin-bottom: 0; }
+  .help b { color: var(--text); font-weight: 600; }
+
   @media (max-width: 640px) {
     .hero { padding-top: 8vh; }
     .tagline i { width: 28px; }
@@ -200,6 +216,28 @@
         Android
       </a>
     </div>
+
+    <details class="help">
+      <summary>Windows blocked the download?</summary>
+      <div class="body">
+        <p style="margin:0 0 12px">CTaiko is a small, new app, so Windows SmartScreen may warn about it. To run it anyway:</p>
+        <h2>Browser says the file "isn't commonly downloaded"</h2>
+        <ol>
+          <li>Open your downloads list, hover the file and click <b>&hellip;</b></li>
+          <li>Choose <b>Keep</b>, then <b>Show more</b> &rarr; <b>Keep anyway</b></li>
+        </ol>
+        <h2>"Windows protected your PC" when opening it</h2>
+        <ol>
+          <li>Click <b>More info</b></li>
+          <li>Click <b>Run anyway</b></li>
+        </ol>
+        <h2>Still won't open</h2>
+        <ol>
+          <li>Right-click <b>CTaiko-setup.exe</b> &rarr; <b>Properties</b></li>
+          <li>On the General tab, tick <b>Unblock</b> at the bottom, then <b>OK</b></li>
+        </ol>
+      </div>
+    </details>
   </section>
 
 </main>
