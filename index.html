@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CTaiko</title>
+<meta name="description" content="CTaiko - a fast, lightweight taiko rhythm simulator for Windows.">
+<link rel="icon" href="icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* "Night signal" palette, same values as src/ui/ui_theme.h */
+  :root {
+    --text: #e2e4e8;
+    --text-dim: #7a849a;
+    --on-accent: #080a10;
+    --void: #07090f;
+    --inset: #0c0f18;
+    --panel: #111520;
+    --raised: #191e2d;
+    --hairline: #303950;
+    --signal: #ff4632;
+    --cyan: #46deea;
+    --focus: #ceff42;
+    --display: "Bahnschrift", "Barlow Semi Condensed", "DIN Alternate", "Segoe UI", sans-serif;
+    --body: "Segoe UI", system-ui, -apple-system, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { background: #05060b; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.5;
+    background: linear-gradient(#0c0f1a, #05060b 70%);
+    overflow-x: hidden;
+  }
+
+  /* ---- backdrop: dot grid, sweeping band, data rails, reticle, corner marks ---- */
+  .backdrop { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .dots {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(120,150,200,.16) 1.2px, transparent 1.6px);
+    background-size: 36px 36px; background-position: center top;
+  }
+  .dots.lit {
+    background-image: radial-gradient(circle, rgba(120,150,200,.42) 1.2px, transparent 1.6px);
+    -webkit-mask-image: linear-gradient(transparent 0%, #000 50%, transparent 100%);
+    mask-image: linear-gradient(transparent 0%, #000 50%, transparent 100%);
+    -webkit-mask-size: 100% 36vh; mask-size: 100% 36vh; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    animation: sweep 11s linear infinite;
+  }
+  @keyframes sweep { from { -webkit-mask-position: 0 -40vh; mask-position: 0 -40vh; } to { -webkit-mask-position: 0 140vh; mask-position: 0 140vh; } }
+  .rail { position: absolute; left: 0; right: 0; height: 1px; background: rgba(90,110,150,.10); }
+  .rail::after {
+    content: ""; position: absolute; top: -1px; height: 2px; width: var(--len, 180px);
+    background: linear-gradient(90deg, transparent, var(--c, var(--cyan)));
+    animation: run var(--dur, 14s) linear infinite; animation-delay: var(--delay, 0s);
+  }
+  .rail.rtl::after { background: linear-gradient(270deg, transparent, var(--c, var(--cyan))); animation-name: run-rtl; }
+  @keyframes run { from { left: calc(-1 * var(--len, 180px)); } to { left: 100%; } }
+  @keyframes run-rtl { from { left: 100%; } to { left: calc(-1 * var(--len, 180px)); } }
+  .reticle {
+    position: absolute; left: 50%; top: 30vh; width: min(92vw, 92vh); aspect-ratio: 1; transform: translate(-50%, -50%);
+  }
+  .reticle .spin { transform-origin: 50% 50%; animation: spin 78s linear infinite; }
+  .reticle .spin-back { transform-origin: 50% 50%; animation: spin 46s linear infinite reverse; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .corner { position: fixed; width: 22px; height: 22px; border: 0 solid rgba(110,130,170,.45); z-index: 1; pointer-events: none; }
+  .corner.tl { top: 14px; left: 14px; border-top-width: 1.5px; border-left-width: 1.5px; }
+  .corner.tr { top: 14px; right: 14px; border-top-width: 1.5px; border-right-width: 1.5px; }
+  .corner.bl { bottom: 14px; left: 14px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
+  .corner.br { bottom: 14px; right: 14px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+  main { position: relative; z-index: 2; max-width: 1080px; margin: 0 auto; padding: 0 16px 72px; }
+
+  /* ---- hero ---- */
+  .hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 11vh; }
+  .logo { width: 104px; height: 104px; }
+  .logo .kick { transform-origin: 50px 50px; animation: kick .5s cubic-bezier(.2,.9,.4,1) infinite; }
+  .logo .ripple { transform-origin: 50px 50px; animation: ripple .5s linear infinite; }
+  .logo .sweep { transform-origin: 50px 50px; animation: spin 5.7s linear infinite; }
+  @keyframes kick { 0% { transform: scale(1.1); } 100% { transform: scale(1); } }
+  @keyframes ripple { 0% { transform: scale(1.16); opacity: .45; } 100% { transform: scale(1.56); opacity: 0; } }
+  h1 {
+    margin: 22px 0 0; font-family: var(--display); font-weight: 600; font-size: clamp(54px, 11vw, 92px); line-height: 1;
+    letter-spacing: .16em; margin-right: -.16em; /* letter-spacing leaves trailing space after the O */
+    text-shadow: -2.5px 0 rgba(70,222,234,.85), 2.5px 0 rgba(255,70,50,.85);
+  }
+  .tagline { display: flex; align-items: center; gap: 14px; margin-top: 14px; color: var(--text-dim); }
+  .tagline span { font-family: var(--display); font-size: 13px; letter-spacing: .34em; margin-right: -.34em; }
+  .tagline i { display: block; width: 54px; height: 1.5px; background: var(--signal); }
+  .tagline i:last-child { background: var(--cyan); }
+
+  /* ---- chamfered buttons, like ui_big_button ---- */
+  .actions { width: min(420px, 100%); margin-top: 36px; display: grid; gap: 10px; }
+  .btn {
+    --cut: 13px; position: relative; display: flex; align-items: center; justify-content: center; height: 52px;
+    font-family: var(--display); font-weight: 500; font-size: 21px; color: var(--text); text-decoration: none;
+    clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+    background:
+      linear-gradient(var(--signal), var(--signal)) left calc(var(--cut) + 4px) / 3px calc(100% - var(--cut) - 13px) no-repeat,
+      linear-gradient(rgba(70,222,234,.65), rgba(70,222,234,.65)) right 16px top 0 / 26px 2px no-repeat,
+      linear-gradient(rgba(26,32,48,.9), rgba(14,17,27,.9));
+    filter: drop-shadow(0 0 0 var(--hairline));
+    transition: color .08s;
+  }
+  /* hairline border that follows the chamfer */
+  .btn::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; background: var(--hairline);
+    clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut),
+      1px calc(var(--cut) + .4px), 1px calc(100% - 1px), calc(100% - var(--cut) - .4px) calc(100% - 1px), calc(100% - 1px) calc(100% - var(--cut) - .4px),
+      calc(100% - 1px) 1px, calc(var(--cut) + .4px) 1px, 1px calc(var(--cut) + .4px));
+  }
+  .btn::after {
+    content: ""; position: absolute; right: 22px; top: 50%; width: 9px; height: 9px; margin-top: -5px;
+    border: solid var(--on-accent); border-width: 2.5px 2.5px 0 0; transform: rotate(45deg); opacity: 0;
+  }
+  a.btn:hover, a.btn:focus-visible, .btn.primary { color: var(--on-accent); background: linear-gradient(#ff5c46, #ec3424); outline: none; }
+  a.btn:hover::before, a.btn:focus-visible::before, .btn.primary::before { display: none; }
+  a.btn:hover::after, a.btn:focus-visible::after, .btn.primary::after { opacity: 1; }
+  .btn.primary:hover { background: linear-gradient(#ff7058, #f23e2c); }
+  .btn.primary:active { background: linear-gradient(#d62e1e, #b41e16); }
+  .btn svg { width: 20px; height: 20px; margin-right: 12px; flex: none; }
+
+  /* not-yet-released platforms: dimmed like igBeginDisabled, and hovering swaps the label for a "Coming soon" note.
+     The note lives on the wrapper so it is not dimmed with the button. */
+  .soon { position: relative; cursor: not-allowed; }
+  .soon .btn { opacity: .42; }
+  .soon::after {
+    content: attr(data-tip); position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    white-space: nowrap; font-family: var(--display); font-size: 19px; letter-spacing: .04em; color: var(--cyan);
+    opacity: 0; pointer-events: none; transition: opacity .12s;
+  }
+  .soon .btn { transition: color .12s; }
+  .soon:hover .btn, .soon:focus-visible .btn { color: transparent; }
+  .soon:hover::after, .soon:focus-visible::after { opacity: 1; }
+  .soon:focus-visible { outline: 1px solid var(--focus); outline-offset: 2px; }
+
+  @media (max-width: 640px) {
+    .hero { padding-top: 8vh; }
+    .tagline i { width: 28px; }
+    .tagline span { font-size: 11px; letter-spacing: .24em; margin-right: -.24em; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="backdrop" aria-hidden="true">
+  <div class="dots"></div>
+  <div class="dots lit"></div>
+  <svg class="reticle" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="99" fill="none" stroke="rgba(90,110,150,.16)" stroke-width=".4"/>
+    <circle cx="100" cy="100" r="61" fill="none" stroke="rgba(90,110,150,.11)" stroke-width=".4"/>
+    <circle cx="100" cy="100" r="96" fill="none" stroke="rgba(110,130,170,.18)" stroke-width="3" stroke-dasharray=".4 7.95"/>
+    <g class="spin" fill="none" stroke="rgba(70,222,234,.13)" stroke-width="1">
+      <path d="M187 100 A87 87 0 0 1 120.8 184.5"/>
+      <path d="M56.5 175.3 A87 87 0 0 1 15.9 78.9"/>
+      <path d="M55.7 25.1 A87 87 0 0 1 162.8 39.8"/>
+    </g>
+    <g class="spin-back"><path d="M173 100 A73 73 0 0 1 164.2 134.8" fill="none" stroke="rgba(255,70,50,.3)" stroke-width="1.6"/></g>
+  </svg>
+  <div class="rail" style="top:16%;--dur:17s;--delay:-4s;--len:150px"></div>
+  <div class="rail rtl" style="top:27%;--c:var(--signal);--dur:21s;--delay:-11s;--len:110px"></div>
+  <div class="rail" style="top:40%;--dur:13s;--delay:-2s;--len:200px"></div>
+  <div class="rail rtl" style="top:55%;--dur:19s;--delay:-8s;--len:170px"></div>
+  <div class="rail" style="top:71%;--c:var(--signal);--dur:15s;--delay:-6s;--len:130px"></div>
+</div>
+<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+
+<main>
+  <section class="hero">
+    <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+      <g stroke="rgba(110,130,170,.6)" stroke-width="1">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(110,130,170,.55)" stroke-width="3" stroke-dasharray=".6 11.18"/>
+      </g>
+      <g class="sweep"><path d="M88 50 A38 38 0 0 1 61.7 86.2" fill="none" stroke="#46deea" stroke-width="1.4"/></g>
+      <circle cx="50" cy="50" r="36" fill="#07090f"/>
+      <circle cx="50" cy="50" r="30.5" fill="none" stroke="#ff4632" stroke-width="7.2"/>
+      <circle cx="50" cy="50" r="35.4" fill="none" stroke="rgba(255,120,100,.63)" stroke-width=".6"/>
+      <circle class="ripple" cx="50" cy="50" r="18" fill="none" stroke="#e2e4e8" stroke-width=".6"/>
+      <circle class="kick" cx="50" cy="50" r="18" fill="#e2e4e8"/>
+      <circle cx="50" cy="50" r="2.5" fill="#07090f"/>
+    </svg>
+    <h1>CTAIKO</h1>
+    <div class="tagline"><i></i><span>TAIKO RHYTHM SIMULATOR</span><i></i></div>
+
+    <div class="actions">
+      <a class="btn primary" href="https://github.com/shrandonm/CTaikoRelease/releases/latest/download/CTaiko-setup.exe" download>
+        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M2 3.6l6.6-.9v6.6H2zM9.4 2.6L18 1.4v7.9H9.4zM2 10.1h6.6v6.6L2 15.8zM9.4 10.1H18v7.9l-8.6-1.2z"/></svg>
+        Windows
+      </a>
+      <div class="soon" data-tip="Coming soon" tabindex="0">
+        <span class="btn" aria-disabled="true">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M13.6 1c.1 1-.3 2-.9 2.7-.6.7-1.6 1.3-2.5 1.2-.1-1 .4-2 1-2.6.6-.7 1.6-1.2 2.4-1.3zM16.7 14.2c-.4 1-.7 1.4-1.3 2.3-.8 1.2-2 2.7-3.4 2.7-1.3 0-1.6-.8-3.3-.8s-2.1.8-3.4.8c-1.4 0-2.5-1.4-3.3-2.6C-.2 13.3-.4 9.4.9 7.4c.9-1.4 2.4-2.3 3.8-2.3 1.4 0 2.3.8 3.5.8 1.1 0 1.8-.8 3.5-.8 1.2 0 2.5.7 3.4 1.8-3 1.7-2.5 6 .6 7.3z"/></svg>
+          Mac
+        </span>
+      </div>
+      <a class="btn" href="https://github.com/shrandonm/CTaikoRelease/releases/latest/download/CTaiko.apk" download>
+        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3 9h14v6.5a1 1 0 0 1-1 1h-1.5V19a1.2 1.2 0 0 1-2.4 0v-2.5H8V19a1.2 1.2 0 0 1-2.4 0v-2.5H4a1 1 0 0 1-1-1zM3 8a7 6 0 0 1 14 0zM5.8 1.2l1.5 2.4M14.2 1.2l-1.5 2.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><circle cx="7.3" cy="5.6" r=".85" fill="#0e111b"/><circle cx="12.7" cy="5.6" r=".85" fill="#0e111b"/></svg>
+        Android
+      </a>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>
