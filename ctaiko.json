@@ -1,13 +1,13 @@
 {
-  "version": "3",
+  "version": "4",
   "windows": {
-    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v3/CTaiko-setup.exe",
-    "size": 2767640,
-    "sha256": "728907d1a0b20f4804117b9e0f4aca74dcb11111060ce86bd19eaba820b7ff10"
+    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v4/CTaiko-setup.exe",
+    "size": 2773638,
+    "sha256": "5205f64a1c26c5c9f9fdf864903121913f5f8f0cafb7308f92216a20bc620452"
   },
   "android": {
-    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v3/CTaiko.apk",
-    "size": 2394936,
-    "sha256": "3d2a883b0f2c8c512fa50e0e1d7add39f2a4ce7c5aec7687f3e0c60bb0577f6f"
+    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v4/CTaiko.apk",
+    "size": 2405764,
+    "sha256": "81bdbed80c8d0adac157d353f3689442e7b8f6f60b50a6ed927f3b72cde14390"
   }
 }
