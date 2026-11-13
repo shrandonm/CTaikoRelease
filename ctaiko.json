@@ -1,13 +1,18 @@
 {
-  "version": "9",
+  "version": "10",
   "windows": {
-    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v9/CTaiko-setup.exe",
-    "size": 2801927,
-    "sha256": "1681e4f6ce212d2fde7bbc5a6b3651580a18947cdad9d5cd884ed3eb791431fe"
+    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v10/CTaiko-setup.exe",
+    "size": 2801857,
+    "sha256": "905e5fd23d7fb81434872f49b4ce08fb4f36d71615820221d3769bea80a0cdcb"
   },
   "android": {
-    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v9/CTaiko.apk",
-    "size": 2474108,
-    "sha256": "a626ac1f56b5b7de294580d5076decc90f693a82ce7ae77e1ab13b9e5e8c4a0a"
+    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v10/CTaiko.apk",
+    "size": 2474100,
+    "sha256": "1e0d12fa1f649181c9bc679613546e1b284ed86e1738660e2ea8a01288f7259b"
+  },
+  "macos": {
+    "url": "https://github.com/shrandonm/CTaikoRelease/releases/download/ctaiko-v10/CTaiko-mac.zip",
+    "size": 2297429,
+    "sha256": "4ccf5bb2ba247d9ba30d2383840c6ea328a75d32a43434d3148240d002c33773"
   }
 }
